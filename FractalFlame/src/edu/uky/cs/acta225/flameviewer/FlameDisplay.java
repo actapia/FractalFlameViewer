@@ -1,3 +1,4 @@
+package edu.uky.cs.acta225.flameviewer;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -16,8 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-
-import Other.ImageUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -42,6 +41,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class FlameDisplay extends JFrame implements ActionListener,MouseWheelListener,ChangeListener,MouseMotionListener,MouseListener {
 	private ImagePanel fractalImagePanel;

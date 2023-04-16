@@ -1,3 +1,4 @@
+package edu.uky.cs.acta225.flameviewer;
 public class PopcornVariation implements Variation {
 	static final int NUM_PARAMETERS = 2;
 

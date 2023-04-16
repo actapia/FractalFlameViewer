@@ -1,5 +1,7 @@
+package edu.uky.cs.acta225.flameviewer;
 import java.awt.Color;
-import Other.ImageUtilities;
+
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class IteratedFunction {
 	public static final int VARIATION_LINEAR = 0;

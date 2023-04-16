@@ -1,3 +1,4 @@
+package edu.uky.cs.acta225.flameviewer;
 
 public class Animator {
 	private double velocity, acceleration, initial;

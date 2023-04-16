@@ -1,6 +1,7 @@
+package edu.uky.cs.acta225.flameviewer;
 import javax.swing.JProgressBar;
 
-import Other.ImageUtilities;
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class ChaosThread implements Runnable {
 

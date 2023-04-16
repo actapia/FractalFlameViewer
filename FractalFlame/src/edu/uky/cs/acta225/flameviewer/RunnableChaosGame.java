@@ -1,9 +1,10 @@
+package edu.uky.cs.acta225.flameviewer;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
-import Other.ImageUtilities;
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class RunnableChaosGame implements Runnable {
 	FlameDisplay displayer;

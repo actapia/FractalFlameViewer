@@ -1,4 +1,4 @@
-package Other;
+package edu.uky.cs.acta225.imageutils;
 
 
 import java.awt.Graphics2D;

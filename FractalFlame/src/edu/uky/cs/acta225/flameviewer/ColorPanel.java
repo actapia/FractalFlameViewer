@@ -1,3 +1,4 @@
+package edu.uky.cs.acta225.flameviewer;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Graphics;
@@ -14,7 +15,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import Other.ImageUtilities;
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class ColorPanel extends JPanel implements MouseListener {
 	private JDialog colorChooserDialog;

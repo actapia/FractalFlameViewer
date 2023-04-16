@@ -1,3 +1,4 @@
+package edu.uky.cs.acta225.flameviewer;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -8,7 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
-import Other.ImageUtilities;
+import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class FunctionColorPanel extends ColorPanel {
 	IteratedFunction function;
