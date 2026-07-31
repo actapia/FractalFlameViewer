@@ -1,4 +1,7 @@
-package edu.uky.cs.acta225.flameviewer;
+package edu.uky.cs.acta225.flame.variation;
+
+import edu.uky.cs.acta225.flame.Point;
+
 public class UKVariation implements Variation {
 	protected int mod(int n,int d) { //This is my "improved" modulus function. It always returns the integer in the congruence class of n mod d between 0 and (d-1), inclusive.
 		int res = n%d;
@@ -43,6 +46,10 @@ public class UKVariation implements Variation {
 		int choice = (Math.min(a, b)+(int)(Math.random()*(Math.abs(a-b))));
 		last = choice;
 		return new Point((x+points[choice].getX())/2,(y+points[choice].getY())/2);
+	}
+	
+	public UKVariation cloneVariation() {
+		return new UKVariation();
 	}
 
 }

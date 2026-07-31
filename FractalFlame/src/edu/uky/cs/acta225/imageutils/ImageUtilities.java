@@ -1,6 +1,7 @@
 package edu.uky.cs.acta225.imageutils;
 
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -58,5 +59,13 @@ public class ImageUtilities {
 	    g2d.drawImage(src, 0, 0, null);
 	    g2d.dispose();
 	    return img;
+	}
+	
+	public static Color toAwtColor(int color) {
+		return new Color(getRedComponent(color),getGreenComponent(color),getBlueComponent(color));
+	}
+	
+	public static int fromAwtColor(Color color) {
+		return combine(MAX_COLOR, color.getRed(), color.getGreen(), color.getBlue());
 	}
 }

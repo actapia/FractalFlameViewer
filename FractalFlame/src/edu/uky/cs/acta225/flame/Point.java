@@ -1,4 +1,4 @@
-package edu.uky.cs.acta225.flameviewer;
+package edu.uky.cs.acta225.flame;
 
 public class Point {
 	private double x,y;

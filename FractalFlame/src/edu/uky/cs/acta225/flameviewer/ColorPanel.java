@@ -42,6 +42,7 @@ public class ColorPanel extends JPanel implements MouseListener {
 	
 	public void setColor(Color c) {
 		colorChooser.setColor(c);
+		this.setBackground(c);
 	}
 
 	@Override
@@ -73,11 +74,13 @@ public class ColorPanel extends JPanel implements MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		System.out.println("MR");
 		if (this.isEnabled()) {
 			Color currentColor = getColor();
 			colorChooserDialog.setVisible(true);
 			repaint();
 			if (!currentColor.equals(getColor())) {
+				this.setBackground(getColor());
 				for (ChangeListener listener: changeListeners) {
 					listener.stateChanged(new ChangeEvent(this));
 				}

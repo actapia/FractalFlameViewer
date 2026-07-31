@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
+import edu.uky.cs.acta225.flame.IteratedFunction;
 import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class FunctionColorPanel extends ColorPanel {
