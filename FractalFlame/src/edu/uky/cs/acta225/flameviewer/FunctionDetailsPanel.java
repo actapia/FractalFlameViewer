@@ -43,6 +43,12 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 		this.getParent().revalidate();
 	}
 	
+	public void refreshVariationName(NamedVariation variation) {
+		LabeledSpinner labeledSpinner = variationWeightControls.get(variation);
+		labeledSpinner.getLabel().setText(variation.getName() + ":");
+		labeledSpinner.getLabel().repaint();
+		labeledSpinner.getLabel().getParent().revalidate();
+	}
 
 	
 	private class CoefficientChanger implements ChangeListener {

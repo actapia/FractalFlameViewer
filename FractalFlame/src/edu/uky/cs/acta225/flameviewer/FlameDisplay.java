@@ -1295,6 +1295,9 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		variationDetailCards.add(panel, variation.getName());
 		variationDetailCardPanels.put(variation.getName(), panel);
 		variationDetailsComboBox.setSelectedItem(newName);
+		for (var entry: functionDetailCardPanels.entrySet()) {
+			entry.getValue().refreshVariationName(variation);
+		}
 	}
 
 	@Override
