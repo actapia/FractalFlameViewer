@@ -95,15 +95,10 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	private JSpinner xSpinner,ySpinner,zoomSpinner; //These are the position spinners.
 	private JSpinner heightSpinner, widthSpinner; //These are the size spinners;
 	private JSpinner gammaSpinner, supersampleSpinner, samplesSpinner; //These are the display spinners.
-//	private JSpinner framesSpinner; //This spinner controls the number of frames for an animation.
 	private JButton centerButton, zeroButton;
-//	private JButton randomizeProbabilitiesButton;
 	private JButton newFractalButton;
-//	private JButton animateButton, browseButton, cancelButton;
-//	private JTextField outputField;
 	private JProgressBar imageProgress;
 	private JComboBox<Object> functionsComboBox;
-//	private ArrayList<IteratedFunction> currentFunctions;
 	private JPanel functionCards;
 	private JPanel functionDetailCards;
 	private JPanel optionsPanel;
@@ -113,15 +108,9 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	private BidiMap<String, FunctionPanel> functionCardPanels;
 	private BidiMap<String, FunctionDetailsPanel> functionDetailCardPanels;
 	private BidiMap<String, VariationDetailsPanel> variationDetailCardPanels;
-//	private HashMap<>
-//	private JCheckBox animateConstantsBox, animateVariationWeightsBox, animateFunctionProbabilitiesBox, animateFlameColorBox, multiAnimationBox;
-	
-//	private double[] functionProbabilities;
-//	private static double[] initialVariationWeightLimits = new double[IteratedFunction.NUMBER_OF_VARIATIONS];
 	private Distribution<IteratedFunction> currentFunctionProbabilities;
 	private MyLinkedHashMap<NamedVariation, Double> currentVariationDefaultWeights;
-	
-	private int frames,fractalNumber;
+
 	private boolean cancelled;
 	
 	private JFrame functionDetailFrame;
@@ -135,11 +124,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	
 	private VariationsPanel variationsPanel;
 	
-//	private Animator aConstantAnimator,bConstantAnimator,cConstantAnimator,dConstantAnimator,eConstantAnimator,fConstantAnimator;
-//	private Animator[] variationWeightAnimators;
-//	private Animator[] functionProbabilityAnimators;
-//	private Animator[][] flameColorAnimators;
-	
 	private static final int HUE_INDEX = 0;
 	private static final int SATURATION_INDEX = 1;
 	private static final int VALUE_INDEX = 2;
@@ -149,8 +133,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	private IDPool functionIDPool;
 	
 	private static Pattern functionPattern = Pattern.compile("Function ([0-9]+)");
-	
-//	private static HashMap<String, Pattern> variationPatterns = new HashMap<String, Pattern>();
 	private static Pattern variationPattern = Pattern.compile("(.*) ([0-9]+)");
 	
 	private HashMap<String, IDPool> variationIDPools;
@@ -158,23 +140,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	private ComboBoxItem newFunctionItem;
 	private ComboBoxItem newVariationItem;
 	
-	
-	protected int mod(int n,int d) { //This is my "improved" modulus function. It always returns the congruence class of n mod d between 0 and (d-1), inclusive.
-		int res = n%d;
-		if (res<0)
-			res = d+res;
-		return res;
-	}
-	
 	private void chaosGame(BufferedImage img,int iterations, Distribution<IteratedFunction> functionProbabilities) {
-//		System.out.println("Running chaos game: functions[0].getConstantA() = "+functions[0].getConstantA()); 
-//		for (int f=0;f<functions.length;f++) {
-//			double[] weights = functions[f].getVariationWeights();
-//			for (int w=0;w<weights.length;w++) {
-//				System.out.print("w["+w+"] = "+weights[w]+"\t");
-//			}
-//			System.out.println();
-//		}
 		if (lastChaosGame != null) {
 			lastChaosGame.end();
 		}
@@ -192,215 +158,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		cg.addProgressListener(this);
 		cg.addRenderListener(this);
 		(new Thread(cg)).start();
-	}
-	
-//	public void continueAnimation(RunnableChaosGame verified, boolean badFrame) {
-//		if (verified==lastChaosGame) {
-//			if (cancelled) {
-//				enableEverything(optionsPanel);
-//				cancelButton.setEnabled(false);
-//			}
-//			else {
-//				if (frames == 0) {
-//					if (multiAnimationBox.isSelected() && cancelButton.isEnabled()) {
-//						System.out.println("new fractal");
-//						frames = ((Integer)framesSpinner.getValue()).intValue();
-//						newFractal();
-//						disableEverything(optionsPanel);
-//						cancelButton.setEnabled(true);
-//						fractalNumber++;
-//						animate();
-//					}
-//					else {
-//						enableEverything(optionsPanel);
-//						cancelButton.setEnabled(false);
-//					}
-//				}
-//				else {
-//					if (badFrame) {
-//						frames++;
-//						boolean animateConstants = animateConstantsBox.isSelected();
-//						boolean animateVariationWeights = animateVariationWeightsBox.isSelected();
-//						boolean animateFunctionProbabilities = animateFunctionProbabilitiesBox.isSelected();
-//						boolean animateFlameColors = animateFlameColorBox.isSelected();
-//						if (animateVariationWeights) {
-//							for (Animator ani: variationWeightAnimators) {
-//								ani.reverse();
-//							}
-//						}
-//						if (animateConstants) {
-//							aConstantAnimator.reverse();
-//							bConstantAnimator.reverse();
-//							cConstantAnimator.reverse();
-//							dConstantAnimator.reverse();
-//							eConstantAnimator.reverse();
-//							fConstantAnimator.reverse();
-//						}
-//						if (animateFunctionProbabilities) {
-//							for (Animator ani: functionProbabilityAnimators) {
-//								ani.reverse();
-//							}
-//						}
-//					}
-//					continueAnimation();
-//				}
-//			}
-//		}
-//	}
-	
-//	private void continueAnimation() {
-//		//Save current image.
-////		try {
-//		    BufferedImage bi = fractalImagePanel.getImage(); //Get the image from the fractal panel.
-////		    File file = new File(outputDirectory.getAbsolutePath()+"/flame_"+fractalNumber+"_frame"+(((Integer)framesSpinner.getValue()).intValue()-frames)+".png");
-////		    ImageIO.write(bi, "png", file); //Write it.
-//		    if (frames>0) {
-//				boolean animateConstants = animateConstantsBox.isSelected();
-//				boolean animateVariationWeights = animateVariationWeightsBox.isSelected();
-//				boolean animateFunctionProbabilities = animateFunctionProbabilitiesBox.isSelected();
-//				boolean animateFlameColors = animateFlameColorBox.isSelected();
-//				if (animateConstants) {
-//					for (int functionIndex=0;functionIndex<currentFunctions.length;functionIndex++) {
-//						double a = aConstantAnimator.animate(currentFunctions[functionIndex].getConstantA());
-//						double b = bConstantAnimator.animate(currentFunctions[functionIndex].getConstantB());
-//						double c = cConstantAnimator.animate(currentFunctions[functionIndex].getConstantC());
-//						double d = dConstantAnimator.animate(currentFunctions[functionIndex].getConstantD());
-//						double e = eConstantAnimator.animate(currentFunctions[functionIndex].getConstantE());
-//						double f = fConstantAnimator.animate(currentFunctions[functionIndex].getConstantF());
-//						//System.out.println(currentFunctions[functionIndex].getVariationWeights());
-//						currentFunctions[functionIndex] = new IteratedFunction(a,b,c,d,e,f,currentFunctions[functionIndex].getVariationWeights(),currentFunctions[functionIndex].getColor());
-//					}
-//				}
-//				if (animateVariationWeights) {
-//					for (int functionIndex=0;functionIndex<currentFunctions.length;functionIndex++) {
-//						double[] weights = currentFunctions[functionIndex].getVariationWeights();
-//						for (int weightIndex=0;weightIndex<weights.length;weightIndex++) {
-//							weights[weightIndex] = variationWeightAnimators[weightIndex].animate(weights[weightIndex]);
-//						}
-//						currentFunctions[functionIndex] = new IteratedFunction(currentFunctions[functionIndex].getConstantA(),
-//								currentFunctions[functionIndex].getConstantB(),currentFunctions[functionIndex].getConstantC(),
-//								currentFunctions[functionIndex].getConstantD(),currentFunctions[functionIndex].getConstantE(),
-//								currentFunctions[functionIndex].getConstantF(),weights,currentFunctions[functionIndex].getColor());
-//					}
-//				}
-//				if (animateFunctionProbabilities) {
-//					double[] originalProbabilities = functionProbabilities.clone();
-//					for (int probabilityIndex=0;probabilityIndex<functionProbabilities.length;probabilityIndex++) {
-//						functionProbabilities[probabilityIndex] = Math.max(0,functionProbabilityAnimators[probabilityIndex].animate(functionProbabilities[probabilityIndex]));
-//					}
-//					double totalFunctionProbabilities = 0;
-//					for (int i=0;i<currentFunctions.length;i++) {
-//						functionProbabilities[i] = Math.random();
-//						totalFunctionProbabilities += functionProbabilities[i];
-//					}
-//					if (totalFunctionProbabilities == 0) {
-//						functionProbabilities = originalProbabilities;
-//					}
-//					for (int i=0;i<currentFunctions.length;i++) {
-//						functionProbabilities[i] = functionProbabilities[i]/totalFunctionProbabilities;
-//					}	
-//				}
-//				if (animateFlameColors) {
-//					for (int functionIndex=0;functionIndex<currentFunctions.length;functionIndex++) {
-//						int color = currentFunctions[functionIndex].getColor();
-//						float[] hsbValues = Color.RGBtoHSB(ImageUtilities.getRedComponent(color), ImageUtilities.getGreenComponent(color), ImageUtilities.getBlueComponent(color), null);
-////						System.out.println("original saturation: "+hsbValues[SATURATION_INDEX]);
-//						double hue = flameColorAnimators[functionIndex][HUE_INDEX].animate(hsbValues[HUE_INDEX]);
-//						double value = Math.max(0,Math.min(1,flameColorAnimators[functionIndex][VALUE_INDEX].animate(hsbValues[VALUE_INDEX])));
-//						double saturation = Math.max(0,Math.min(1,flameColorAnimators[functionIndex][SATURATION_INDEX].animate(hsbValues[SATURATION_INDEX])));
-////						System.out.println("h: "+hue+"\ts: "+saturation+"\tb: "+value);
-//						color = Color.HSBtoRGB((float)hue, (float)saturation, (float)value);
-//						currentFunctions[functionIndex].setColor(color);
-//					}
-//				}
-//				frames--;
-//				updateImage();
-//			}
-////		} catch (IOException error) {
-////			//Something bad happened.
-////		    JOptionPane.showMessageDialog(this, "Error in saving file!", "Oh child!", JOptionPane.WARNING_MESSAGE);
-////		}
-//		
-//	}
-//	
-//	private void animate() {
-//		final int HSV_LENGTH = 3;
-//		aConstantAnimator = null;
-//		bConstantAnimator = null;
-//		cConstantAnimator = null;
-//		dConstantAnimator = null;
-//		eConstantAnimator = null;
-//		fConstantAnimator = null;
-//		cancelled = false;
-//		variationWeightAnimators = new Animator[IteratedFunction.NUMBER_OF_VARIATIONS];
-//		functionProbabilityAnimators = new Animator[currentFunctions.length];
-//		flameColorAnimators = new Animator[currentFunctions.length][HSV_LENGTH];
-//		boolean animateConstants = animateConstantsBox.isSelected();
-//		boolean animateVariationWeights = animateVariationWeightsBox.isSelected();
-//		boolean animateFunctionProbabilities = animateFunctionProbabilitiesBox.isSelected();
-//		boolean animateFlameColors = animateFlameColorBox.isSelected();
-//		if (animateConstants) {
-//			aConstantAnimator = new Animator();
-//			bConstantAnimator = new Animator();
-//			cConstantAnimator = new Animator();
-//			dConstantAnimator = new Animator();
-//			eConstantAnimator = new Animator();
-//			fConstantAnimator = new Animator();
-//		}
-//		if (animateVariationWeights) {
-//			for (int animatorIndex=0;animatorIndex<variationWeightAnimators.length;animatorIndex++) {
-//				variationWeightAnimators[animatorIndex] = new Animator();
-//			}
-//		}
-//		if (animateFunctionProbabilities) {
-//			for (int animatorIndex=0;animatorIndex<functionProbabilityAnimators.length;animatorIndex++) {
-//				double MAX_PROBABILITY_ACCELERATION = 0.00000005; //Iterated Function Systems are extremely sensitive to the probability.
-//				functionProbabilityAnimators[animatorIndex] = new Animator(0,Math.random()*MAX_PROBABILITY_ACCELERATION);
-//			}
-//		}
-//		if (animateFlameColors) {
-//			final double INITIAL_COLOR_ACCELERATION = 0.0003;
-//			final double MAX_INITIAL_COLOR_VELOCITY = 0.003;
-//			for (int animatorIndex=0;animatorIndex<flameColorAnimators.length;animatorIndex++) {
-//					flameColorAnimators[animatorIndex][HUE_INDEX] = new Animator(Math.random()*(INITIAL_COLOR_ACCELERATION/2.0)-INITIAL_COLOR_ACCELERATION,Math.random()*(MAX_INITIAL_COLOR_VELOCITY/2.0)-MAX_INITIAL_COLOR_VELOCITY);
-//					flameColorAnimators[animatorIndex][SATURATION_INDEX] = new Animator();
-//					flameColorAnimators[animatorIndex][VALUE_INDEX]  = new Animator();
-//			}
-//		}
-//		continueAnimation();
-//	}
-//	
-//	public int getAnimationFrames() {
-//		return frames;
-//	}
-	
-
-	
-//	private void old_chaosGame(BufferedImage img,int iterations, IteratedFunction[] functions) {
-//		final int N_GON = 5;
-//		double lastX = (int)(Math.random()*img.getWidth());
-//		double lastY = (int)(Math.random()*img.getHeight());
-//		img.setRGB((int)lastX, (int)lastY, ImageUtilities.combine(255,255,255,255));
-//		//Choose a random vertex.
-//		int lastVertex = -1;
-//		Point[] vertices = new Point[N_GON];
-//		for (int i=0;i<vertices.length;i++) {
-//			double angle = i*2*(Math.PI/vertices.length);
-//			vertices[i] = new Point();
-//			vertices[i].setLocation((img.getWidth()*(Math.sin(angle)+1))/2,(img.getHeight()*(Math.cos(angle)+1))/2);
-//		}
-//		while (iterations-- > 0) {
-//			Point resultingPoint;
-//			IteratedFunction f = functions[(int)(Math.random()*functions.length)];
-//			resultingPoint = f.calculate(lastX, lastY);
-//			lastX = resultingPoint.getX();
-//			lastY = resultingPoint.getY();
-//			int pixelX = (int)(lastX*50);
-//			int pixelY = (int)(lastY*50);
-//			if ((pixelX < img.getWidth()) && (pixelY < img.getHeight()) && (pixelX >= 0) && (pixelY >= 0))
-//				img.setRGB(pixelX, pixelY, ImageUtilities.combine(255,255,255,255));
-//		}
-//	}
+	}	
 
 	public FlameDisplay() {
 		super();
@@ -543,17 +301,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		JLabel framesLabel = new JLabel("Frames:");
 		JLabel outputLabel = new JLabel("Output directory:");
 		JLabel multiLabel = new JLabel("New animation when finished:");
-//		animateConstantsBox  = new JCheckBox();
-//		animateVariationWeightsBox = new JCheckBox();
-//		animateFunctionProbabilitiesBox = new JCheckBox();
-//		animateFlameColorBox = new JCheckBox();
-//		multiAnimationBox = new JCheckBox();
-//		SpinnerNumberModel framesModel = new SpinnerNumberModel(1,1,Integer.MAX_VALUE,FRAME_STEP);
-//		framesSpinner = new JSpinner(framesModel);
-//		cancelButton = new JButton("Cancel");
-//		animateButton = new JButton("Animate!");
-//		outputField = new JTextField();
-//		browseButton = new JButton("Browse...");
 		//Set options for components.
 		//Set options for spinners.
 		final int SPINNER_HEIGHT = 20;
@@ -614,33 +361,11 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		animateVariationWeightsPanel.setLayout(new GridLayout(NUM_ROWS,NUM_COLUMNS));
 		framesPanel.setLayout(new GridLayout(NUM_ROWS,NUM_COLUMNS));
 		multiPanel.setLayout(new GridLayout(NUM_ROWS,NUM_COLUMNS));
-//		animateConstantsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateConstantsBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateConstantsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFunctionProbabilitiesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFunctionProbabilitiesBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFunctionProbabilitiesPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFlameColorBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFlameColorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateFlameColorsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateVariationWeightsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateVariationWeightsBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateVariationWeightsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		framesPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		framesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		directoryPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		outputLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		outputField.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		browseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		animateCancelPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//		randomizeProbabilitiesButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		positionPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Position"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		sizePanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Size"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		displayPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Display"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		functionPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Function"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		variationsPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Default max variation weights"),BorderFactory.createEmptyBorder(10,10,10,10)));
-//		variationsPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Variations"),BorderFactory.createEmptyBorder(10,10,10,10)));
-//		animationPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Animation"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		optionsPanel.setMinimumSize(new Dimension(MINIMUM_OPTIONS_PANEL_WIDTH,INITIAL_FRAME_HEIGHT));
 		imageOptionsSplitter.setDividerLocation(INITIAL_DIVIDER_LOCATION);
 		imageOptionsSplitter.setOneTouchExpandable(true);
@@ -663,29 +388,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		supersamplePanel.add(supersampleSpinner);
 		samplesPanel.add(samplesLabel);
 		samplesPanel.add(samplesSpinner);
-//		functionsPanel.add(functionsLabel);
-//		functionsPanel.add(numFunctionsSpinner);
-//		for (int variationNumber=0;variationNumber<IteratedFunction.NUMBER_OF_VARIATIONS;variationNumber++) {
-//			variationPanels[variationNumber].add(variationLabels[variationNumber]);
-//			variationPanels[variationNumber].add(variationSpinners[variationNumber]);
-//		}
-//		animateConstantsPanel.add(animateConstantsLabel);
-//		animateConstantsPanel.add(animateConstantsBox);
-//		animateVariationWeightsPanel.add(animateVariationWeightsLabel);
-//		animateVariationWeightsPanel.add(animateVariationWeightsBox);
-//		animateFunctionProbabilitiesPanel.add(animateFunctionProbabilitiesLabel);
-//		animateFunctionProbabilitiesPanel.add(animateFunctionProbabilitiesBox);
-//		animateFlameColorsPanel.add(animateFlameColorLabel);
-//		animateFlameColorsPanel.add(animateFlameColorBox);
 		multiPanel.add(multiLabel);
-//		multiPanel.add(multiAnimationBox);
-//		animateCancelPanel.add(cancelButton);
-//		animateCancelPanel.add(animateButton);
-//		framesPanel.add(framesLabel);
-//		framesPanel.add(framesSpinner);
-//		directoryPanel.add(outputLabel);
-//		directoryPanel.add(outputField);
-//		directoryPanel.add(browseButton);
 		positionPanel.add(xPositionPanel);
 		positionPanel.add(yPositionPanel);
 		positionPanel.add(zoomPanel);
@@ -695,29 +398,13 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		displayPanel.add(gammaPanel);
 		displayPanel.add(supersamplePanel);
 		displayPanel.add(samplesPanel);
-//		functionPanel.add(functionsPanel);
 		functionPanel.add(functionsComboBox);
 		functionPanel.add(functionCards);
-//		functionPanel.add(randomizeProbabilitiesButton);
-//		for (int variationNumber=0;variationNumber<IteratedFunction.NUMBER_OF_VARIATIONS;variationNumber++) {
-//			variationsPanel.add(variationPanels[variationNumber]);
-//		}
-//		variationsPanel.add(newFractalButton);
-//		animationPanel.add(animateConstantsPanel);
-//		animationPanel.add(animateVariationWeightsPanel);
-//		animationPanel.add(animateFunctionProbabilitiesPanel);
-//		animationPanel.add(animateFlameColorsPanel);
-//		animationPanel.add(framesPanel);
-//		animationPanel.add(multiPanel);
-//		animationPanel.add(directoryPanel);
-//		animationPanel.add(animateCancelPanel);;
 		optionsPanel.add(positionPanel);
 		optionsPanel.add(sizePanel);
 		optionsPanel.add(displayPanel);
 		optionsPanel.add(functionPanel);
 		optionsPanel.add(variationsPanel);
-//		optionsPanel.add(variationsPanel);
-//		optionsPanel.add(animationPanel);
 		rightSide.add(optionsPanel,BorderLayout.CENTER);
 		rightSide.add(imageProgress,BorderLayout.SOUTH);
 		file.add(saveImageItem);
@@ -745,10 +432,8 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		samplesSpinner.addChangeListener(this);
 		supersampleSpinner.addChangeListener(this);
 		gammaSpinner.addChangeListener(this);
-//		numFunctionsSpinner.addChangeListener(this);
 		centerButton.addActionListener(this);
 		zeroButton.addActionListener(this);
-//		randomizeProbabilitiesButton.addActionListener(this);
 		newFractalButton.addActionListener(this);
 		functionsComboBox.addActionListener(this);
 		functionDetailsComboBox.addActionListener(this);
@@ -757,49 +442,25 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		functionDetailsMenuItem.addActionListener(this);
 		variationDetailsMenuItem.addActionListener(this);
 		variationsPanel.addDeletionListener(this);
-//		browseButton.addActionListener(this);
-//		animateButton.addActionListener(this);
-//		cancelButton.addActionListener(this);
 		setSize(INITIAL_FRAME_WIDTH,INITIAL_FRAME_HEIGHT);
 		currentFunctionProbabilities = new Distribution<IteratedFunction>();
-//		functionProbabilities = new double[INITIAL_FUNCTIONS];
-//		double totalFunctionProbabilities = 0;
 		functionIDPool = new IDPool();
 		
 		for (int i=0;i<INITIAL_FUNCTIONS;i++) {
 			newFunction();
-//			FunctionColorPanel functionColor = new FunctionColorPanel(currentFunctions[i],this);
-//			functionProbabilities[i] = Math.random();
-//			totalFunctionProbabilities += weight;
-//			ithFunctionPanel.add(functionColor);
-//			functionColor.addChangeListener(this);
 		}
 		variationIDPools = new HashMap<String, IDPool>();
 		variationDetailsComboBox.addItem(newVariationItem);
 		for (var entry: this.currentVariationDefaultWeights.entrySet()) {
-//			VariationDetailsPanel vp = new VariationDetailsPanel(variation);
-//			this.variationDetailCards.add(vp, variation.getName());
-//			this.variationDetailCardPanels.put(variation.getName(), vp);
-//			this.variationDetailsComboBox.addItem(variation.getName());
-//			vp.addDeletionListener(this);
-//			variationsPanel.addDetailsListener(variation, new DetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
-//			vp.addNameChangeRequestListener(this);
-//			vp.addVariationChangelistener(this);
-//			vp.addVariationReplacementListener(this);
 			newVariation(entry.getKey(), entry.getValue());
 		}
 		variationDetailsComboBox.setSelectedIndex(0);
 		variationDetailsComboBox.addActionListener(this);
 		functionsComboBox.setSelectedIndex(0);
 		functionDetailsComboBox.setSelectedIndex(0);
-		
-		//Normalize the probability distribution.
-//		for (int i=0;i<currentFunctions.length;i++) {
-//			functionProbabilities[i] = functionProbabilities[i]/totalFunctionProbabilities;
-//		}
+	
 		chaosGame(fractalImage,INITIAL_ITERATIONS,currentFunctionProbabilities);
 		setVisible(true);
-//		cancelButton.setEnabled(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -825,40 +486,9 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		}
 	}
 	
-//	public void newFractal() {
-//		functionCards.removeAll();
-//		functionsComboBox.removeAllItems();
-//		int numFunctions = ((Integer)numFunctionsSpinner.getValue()).intValue();
-//		currentFunctions = new IteratedFunction[numFunctions];
-//		functionProbabilities = new double[numFunctions];
-//		double totalFunctionProbabilities = 0;
-//		double[] variationWeightLimits = new double[IteratedFunction.NUMBER_OF_VARIATIONS];
-//		for (int variationNumber=0;variationNumber<IteratedFunction.NUMBER_OF_VARIATIONS;variationNumber++) {
-//			variationWeightLimits[variationNumber] = ((Double)variationSpinners[variationNumber].getValue()).doubleValue();
-//		}
-//		for (int i=0;i<currentFunctions.length;i++) {
-//			String functionString = "Function "+i;
-//			functionsComboBox.addItem(functionString);
-//			JPanel ithFunctionPanel = new JPanel();
-//			functionCards.add(ithFunctionPanel, functionString);
-//			currentFunctions[i] = new IteratedFunction(variationWeightLimits);
-//			FunctionColorPanel functionColor = new FunctionColorPanel(currentFunctions[i],this);
-//			functionProbabilities[i] = Math.random();
-//			totalFunctionProbabilities += functionProbabilities[i];
-//			ithFunctionPanel.add(functionColor);
-//			functionColor.addChangeListener(this);
-//		}
-//		//Normalize the probability distribution.
-//		for (int i=0;i<currentFunctions.length;i++) {
-//			functionProbabilities[i] = functionProbabilities[i]/totalFunctionProbabilities;
-//		}
-//		updateImage();
-//	}
-	
 	public void enableEverything(Container comp) {
 		
 		for (Component subComponent: comp.getComponents()) {
-//			if (subComponent != cancelButton)
 			subComponent.setEnabled(true);
 			if (subComponent instanceof Container) {
 				enableEverything((Container)subComponent);
@@ -875,10 +505,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	
 	@Override
 	public void stateChanged(ChangeEvent arg0) {
-//		if ((arg0.getSource() == widthSpinner) || (arg0.getSource() == heightSpinner)) {
-//			BufferedImage resizedImage = new BufferedImage(((Integer)widthSpinner.getValue()).intValue(),((Integer)heightSpinner.getValue()).intValue(),BufferedImage.TYPE_INT_RGB);
-//			fractalImagePanel.setImage(resizedImage);
-//		}
 		updateImage();
 	}
 	
@@ -1009,20 +635,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 			}
 			((CardLayout)variationDetailCards.getLayout()).show(variationDetailCards, (String)variationDetailsComboBox.getSelectedItem());
 		}
-//		else if (arg0.getSource()==randomizeProbabilitiesButton) {
-//			double totalFunctionProbabilities = 0;
-//			for (int i=0;i<currentFunctions.length;i++) {
-//				functionProbabilities[i] = Math.random();
-//				totalFunctionProbabilities += functionProbabilities[i];
-//			}
-//			for (int i=0;i<currentFunctions.length;i++) {
-//				functionProbabilities[i] = functionProbabilities[i]/totalFunctionProbabilities;
-//			}
-//			updateImage();
-//		}
-//		else if (arg0.getSource() == newFractalButton) {
-//			newFractal();
-//		}
 		else if (arg0.getSource() == saveImageItem) {
 			//This lets the user save a file.
 			JFileChooser jfc = new JFileChooser(); //Make the dialog.
@@ -1078,42 +690,11 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 //			}
 		}
 		else if (arg0.getSource() == functionDetailsMenuItem) {
-			functionDetailFrame.show();
+			functionDetailFrame.setVisible(true);
 		}
 		else if (arg0.getSource() == variationDetailsMenuItem) {
 			variationDetailFrame.setVisible(true);
 		}
-//		else if (arg0.getSource() == browseButton) {
-//			JFileChooser directoryBrowser = new JFileChooser();
-//			directoryBrowser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//			directoryBrowser.showSaveDialog(this);
-//			if (directoryBrowser.getSelectedFile().exists()) {
-//				outputField.setText(directoryBrowser.getSelectedFile().getAbsolutePath());
-//			}
-//			else {
-//				JOptionPane.showMessageDialog(this, "Directory "+directoryBrowser.getSelectedFile().getAbsolutePath()+" does not exist!", "Oh child!", JOptionPane.WARNING_MESSAGE);
-//			}
-//		}
-//		else if (arg0.getSource() == animateButton) {
-//			File od = new File(outputField.getText());
-//			if (od.exists() && od.isDirectory()) {
-//				outputDirectory = od;
-//				disableEverything(optionsPanel);
-//				fractalImagePanel.removeMouseListener(this);
-//				fractalImagePanel.removeMouseWheelListener(this);
-//				fractalImagePanel.removeMouseMotionListener(this);
-//				frames = ((Integer)framesSpinner.getValue()).intValue();
-//				cancelButton.setEnabled(true);
-//				fractalNumber = 0;
-//				animate();
-//			}
-//			else {
-//				JOptionPane.showMessageDialog(this, "Directory "+outputField.getText()+" does not exist!", "Oh child!", JOptionPane.WARNING_MESSAGE);
-//			}
-//		}
-//		else if (arg0.getSource() == cancelButton) {
-//			cancelled = true;
-//		}
 	}
 	
 	public static void main(String[] args) {
@@ -1318,8 +899,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		variationsPanel.getParent().revalidate();
 		this.currentVariationDefaultWeights.remove(variation);
 		updateImage();
-//		this.repaint();
-//		this.revalidate();
 	}
 	
 	private void renameVariation(NamedVariation variation, String newName) {
@@ -1364,21 +943,10 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		System.out.println("Received variation change.");
 		NamedVariation oldVariation = event.getVariation();
 		NamedVariation newVariation = event.getNewVariation();
-//		Double weight = this.currentVariationDefaultWeights.get(oldVariation);
 		this.currentVariationDefaultWeights.replaceKey(oldVariation, newVariation);
 		for (IteratedFunction function: this.currentFunctionProbabilities.keySet()) {
-//			function.getVariationWeights()
 			function.replaceVariation(oldVariation, newVariation);
 		}
 		updateImage();
 	}
-
-
-
-
-
-
-
-
-
 }
