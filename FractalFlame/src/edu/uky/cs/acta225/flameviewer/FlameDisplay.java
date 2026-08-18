@@ -159,6 +159,33 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		cg.addRenderListener(this);
 		(new Thread(cg)).start();
 	}	
+	
+	private abstract class PositionSetter implements ActionListener {
+		protected abstract Integer getX();
+		protected abstract Integer getY();
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			xSpinner.removeChangeListener(FlameDisplay.this);
+			xSpinner.setValue(Integer.valueOf(getX()));
+			ySpinner.setValue(Integer.valueOf(getY()));
+			xSpinner.addChangeListener(FlameDisplay.this);
+		}
+	}
+	
+	private class NewFunctionComboBoxCardSelector extends NewObjectComboBoxCardSelector {
+		public NewFunctionComboBoxCardSelector(JComboBox<Object> box, JPanel cards, ComboBoxItem nItem) {
+			super(box, cards, nItem);
+		}
+		
+		@Override
+		protected Object newObject() {
+			var res = newFunction();
+			updateImage();
+			return res;
+		}
+	}
 
 	public FlameDisplay() {
 		super();
@@ -432,13 +459,92 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		samplesSpinner.addChangeListener(this);
 		supersampleSpinner.addChangeListener(this);
 		gammaSpinner.addChangeListener(this);
-		centerButton.addActionListener(this);
-		zeroButton.addActionListener(this);
+		centerButton.addActionListener(new PositionSetter() {
+			@Override
+			protected Integer getX() {
+				return Integer.valueOf(fractalImagePanel.getImage().getWidth()/2);
+			}
+
+			@Override
+			protected Integer getY() {
+				return Integer.valueOf(fractalImagePanel.getImage().getHeight()/2);
+			}
+		});
+		zeroButton.addActionListener(new PositionSetter() {
+			@Override
+			protected Integer getX() {
+				return Integer.valueOf(0);
+			}
+
+			@Override
+			protected Integer getY() {
+				return Integer.valueOf(0);
+			}
+		});
 		newFractalButton.addActionListener(this);
-		functionsComboBox.addActionListener(this);
-		functionDetailsComboBox.addActionListener(this);
-		saveImageItem.addActionListener(this);
-		saveSessionItem.addActionListener(this);
+		functionsComboBox.addActionListener(new NewFunctionComboBoxCardSelector(functionsComboBox, functionCards, newFunctionItem));
+		functionDetailsComboBox.addActionListener(new NewFunctionComboBoxCardSelector(functionDetailsComboBox, functionDetailCards, newFunctionItem));
+		saveImageItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//This lets the user save a file.
+				JFileChooser jfc = new JFileChooser(); //Make the dialog.
+				int result = jfc.showSaveDialog(FlameDisplay.this); //Bring it up; record the result.
+				if(result == JFileChooser.CANCEL_OPTION)
+					return;
+				File f = jfc.getSelectedFile(); //This is the file that the user wants to overwrite or create.
+				try {
+				    BufferedImage bi = fractalImagePanel.getImage(); //Get the image from the fractal panel.
+				    ImageIO.write(bi, "png", f); //Write it.
+				} catch (IOException error) {
+					//Something bad happened.
+				    JOptionPane.showMessageDialog(FlameDisplay.this, "Error in saving file!", "Oh child!", JOptionPane.WARNING_MESSAGE);
+				}
+			}
+		});
+		saveSessionItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//This lets the user save a file.
+				JFileChooser jfc = new JFileChooser(); //Make the dialog.
+				int result = jfc.showSaveDialog(FlameDisplay.this); //Bring it up; record the result.
+				if(result == JFileChooser.CANCEL_OPTION)
+					return;
+				File f = jfc.getSelectedFile();
+				Configurations configs = new Configurations();
+				try {
+					Parameters params = new Parameters();
+					XMLBuilderParameters xmlParams = params.xml();
+					FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class);
+					XMLConfiguration config = builder.getConfiguration();
+					config.setRootElementName("fractal-frame-session");
+					config.setProperty("display.position[@x-offset]", ((Integer)xSpinner.getValue()).intValue());
+					config.setProperty("display.position[@y-offset]", ((Integer)ySpinner.getValue()).intValue());
+					config.setProperty("display.position[@zoom]", ((Double)zoomSpinner.getValue()).doubleValue());
+					config.setProperty("display.size[@width]", ((Integer)widthSpinner.getValue()).intValue());
+					config.setProperty("display.size[@height]", ((Integer)heightSpinner.getValue()).intValue());
+					config.setProperty("display[@gamma]", ((Double)gammaSpinner.getValue()).doubleValue());
+					config.setProperty("display[@supersample]", ((Integer)supersampleSpinner.getValue()).intValue());
+					config.setProperty("display[@samples]", ((Integer)samplesSpinner.getValue()).intValue());
+//					config.setProperty(", arg0)
+//					config.setProperty("position.x-offset", arg0)
+//					config.addProperty("dog", "happy");
+					builder.getFileHandler().save(f);
+				} catch (ConfigurationException err) {
+//					 TODO Auto-generated catch block
+					err.printStackTrace();
+				}
+				
+//				try {
+//				    BufferedImage bi = fractalImagePanel.getImage(); //Get the image from the fractal panel.
+//				    ImageIO.write(bi, "png", f); //Write it.
+//				} catch (IOException error) {
+//					//Something bad happened.
+//				    JOptionPane.showMessageDialog(this, "Error in saving file!", "Oh child!", JOptionPane.WARNING_MESSAGE);
+//				}
+			}
+			
+		});
 		functionDetailsMenuItem.addActionListener(this);
 		variationDetailsMenuItem.addActionListener(this);
 		variationsPanel.addDeletionListener(this);
@@ -570,7 +676,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		this.variationDetailsComboBox.insertItemAt(variation.getName(), variationDetailsComboBox.getItemCount() - 1);
 		vp.addDeletionListener(this);
 		variationsPanel.addVariation(variation, weight);
-		variationsPanel.addDetailsListener(variation, new DetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
+		variationsPanel.addDetailsListener(variation, new ButtonDetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
 		variationsPanel.repaint();
 		variationsPanel.getParent().revalidate();
 		vp.addNameChangeRequestListener(this);
@@ -594,38 +700,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		if ((arg0.getSource() == centerButton || arg0.getSource() == zeroButton)) {
-			xSpinner.removeChangeListener(this);
-			if (arg0.getSource() == centerButton) {
-				xSpinner.setValue(Integer.valueOf(fractalImagePanel.getImage().getWidth()/2));
-				ySpinner.setValue(Integer.valueOf(fractalImagePanel.getImage().getHeight()/2));
-			}
-			else if (arg0.getSource() == zeroButton) {
-				xSpinner.setValue(Integer.valueOf(0));
-				ySpinner.setValue(Integer.valueOf(0));
-			}
-			xSpinner.addChangeListener(this);
-		}
-		else if (arg0.getSource() == functionsComboBox) {
-			if (functionsComboBox.getSelectedItem() == newFunctionItem) {
-//				System.out.println("New function!");
-				IteratedFunction fun = newFunction();
-				functionsComboBox.setSelectedItem(fun.getName());
-				updateImage();
-			}
-			System.out.println("Selected " + functionsComboBox.getSelectedItem());
-			((CardLayout)functionCards.getLayout()).show(functionCards, (String)functionsComboBox.getSelectedItem());
-		}
-		else if (arg0.getSource() == functionDetailsComboBox) {
-			if (functionDetailsComboBox.getSelectedItem() == newFunctionItem) {
-//				System.out.println("New function!");
-				IteratedFunction fun = newFunction();
-				functionDetailsComboBox.setSelectedItem(fun.getName());
-				updateImage();
-			}
-			((CardLayout)functionDetailCards.getLayout()).show(functionDetailCards, (String)functionDetailsComboBox.getSelectedItem());
-		}
-		else if (arg0.getSource() == variationDetailsComboBox) {
+		if (arg0.getSource() == variationDetailsComboBox) {
 			if (variationDetailsComboBox.getSelectedItem() == newVariationItem) {
 				NamedVariation vari = newVariation();
 				this.addVariationToFunctions(vari, 1.0);
@@ -634,60 +709,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 				updateImage();
 			}
 			((CardLayout)variationDetailCards.getLayout()).show(variationDetailCards, (String)variationDetailsComboBox.getSelectedItem());
-		}
-		else if (arg0.getSource() == saveImageItem) {
-			//This lets the user save a file.
-			JFileChooser jfc = new JFileChooser(); //Make the dialog.
-			int result = jfc.showSaveDialog(this); //Bring it up; record the result.
-			if(result == JFileChooser.CANCEL_OPTION)
-				return;
-			File f = jfc.getSelectedFile(); //This is the file that the user wants to overwrite or create.
-			try {
-			    BufferedImage bi = fractalImagePanel.getImage(); //Get the image from the fractal panel.
-			    ImageIO.write(bi, "png", f); //Write it.
-			} catch (IOException error) {
-				//Something bad happened.
-			    JOptionPane.showMessageDialog(this, "Error in saving file!", "Oh child!", JOptionPane.WARNING_MESSAGE);
-			}
-		}
-		else if (arg0.getSource() == saveSessionItem) {
-			//This lets the user save a file.
-			JFileChooser jfc = new JFileChooser(); //Make the dialog.
-			int result = jfc.showSaveDialog(this); //Bring it up; record the result.
-			if(result == JFileChooser.CANCEL_OPTION)
-				return;
-			File f = jfc.getSelectedFile();
-			Configurations configs = new Configurations();
-			try {
-				Parameters params = new Parameters();
-				XMLBuilderParameters xmlParams = params.xml();
-				FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class);
-				XMLConfiguration config = builder.getConfiguration();
-				config.setRootElementName("fractal-frame-session");
-				config.setProperty("display.position[@x-offset]", ((Integer)xSpinner.getValue()).intValue());
-				config.setProperty("display.position[@y-offset]", ((Integer)ySpinner.getValue()).intValue());
-				config.setProperty("display.position[@zoom]", ((Double)zoomSpinner.getValue()).doubleValue());
-				config.setProperty("display.size[@width]", ((Integer)widthSpinner.getValue()).intValue());
-				config.setProperty("display.size[@height]", ((Integer)heightSpinner.getValue()).intValue());
-				config.setProperty("display[@gamma]", ((Double)gammaSpinner.getValue()).doubleValue());
-				config.setProperty("display[@supersample]", ((Integer)supersampleSpinner.getValue()).intValue());
-				config.setProperty("display[@samples]", ((Integer)samplesSpinner.getValue()).intValue());
-//				config.setProperty(", arg0)
-//				config.setProperty("position.x-offset", arg0)
-//				config.addProperty("dog", "happy");
-				builder.getFileHandler().save(f);
-			} catch (ConfigurationException e) {
-//				 TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-//			try {
-//			    BufferedImage bi = fractalImagePanel.getImage(); //Get the image from the fractal panel.
-//			    ImageIO.write(bi, "png", f); //Write it.
-//			} catch (IOException error) {
-//				//Something bad happened.
-//			    JOptionPane.showMessageDialog(this, "Error in saving file!", "Oh child!", JOptionPane.WARNING_MESSAGE);
-//			}
 		}
 		else if (arg0.getSource() == functionDetailsMenuItem) {
 			functionDetailFrame.setVisible(true);
@@ -777,7 +798,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 //		ithFunctionPanel.
 //		ithFunctionDetailsPanel.add(ithFunctionPanel);
 //		currentFunctions[i] = new IteratedFunction(initialVariationWeightLimits);
-		ithFunctionPanel.getDetailsButton().addActionListener(new DetailsDisplayer(function, functionDetailsComboBox, functionDetailFrame));
+		ithFunctionPanel.getDetailsButton().addActionListener(new ButtonDetailsDisplayer(function, functionDetailsComboBox, functionDetailFrame));
 		this.currentFunctionProbabilities.put(function, weight);
 		
 		return function;

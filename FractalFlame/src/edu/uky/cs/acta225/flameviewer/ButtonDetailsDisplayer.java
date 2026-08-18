@@ -8,12 +8,12 @@ import javax.swing.JFrame;
 
 import edu.uky.cs.acta225.flame.Named;
 
-public class DetailsDisplayer implements ActionListener {
+public class ButtonDetailsDisplayer implements ActionListener {
 	private Named object;
 	private JComboBox<Object> detailsComboBox;
 	private JFrame detailsFrame;
 	
-	public DetailsDisplayer(Named o, JComboBox<Object> box, JFrame frame) {
+	public ButtonDetailsDisplayer(Named o, JComboBox<Object> box, JFrame frame) {
 		object = o;
 		detailsComboBox = box;
 		detailsFrame = frame;
