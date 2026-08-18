@@ -31,6 +31,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 import edu.uky.cs.acta225.flame.IteratedFunction;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateEvent;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateListener;
 import edu.uky.cs.acta225.imageutils.ImageUtilities;
 
 public class FunctionPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, ActionListener {

@@ -1,4 +1,4 @@
-package edu.uky.cs.acta225.flameviewer;
+package edu.uky.cs.acta225.flameviewer.events;
 
 import java.awt.GridBagConstraints;
 import java.util.EventObject;

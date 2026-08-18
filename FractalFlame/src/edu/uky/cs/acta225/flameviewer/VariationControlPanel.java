@@ -6,6 +6,8 @@ import java.util.EventObject;
 import javax.swing.JPanel;
 
 import edu.uky.cs.acta225.flame.variation.NamedVariation;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeListener;
 
 public abstract class VariationControlPanel extends JPanel {
 	

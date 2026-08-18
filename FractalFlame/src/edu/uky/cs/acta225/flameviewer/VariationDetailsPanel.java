@@ -11,21 +11,56 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import edu.uky.cs.acta225.flame.variation.EyefishVariation;
+import edu.uky.cs.acta225.flame.variation.HorseshoeVariation;
+import edu.uky.cs.acta225.flame.variation.LinearVariation;
 import edu.uky.cs.acta225.flame.variation.NamedVariation;
+import edu.uky.cs.acta225.flame.variation.PopcornVariation;
+import edu.uky.cs.acta225.flame.variation.SinusoidalVariation;
+import edu.uky.cs.acta225.flame.variation.SphericalVariation;
+import edu.uky.cs.acta225.flame.variation.SwirlVariation;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationNameChangeRequestListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationNameChangeRequestedEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationReplacedEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationReplacementListener;
 
 public class VariationDetailsPanel extends VariationDeletingPanel implements ActionListener, FocusListener, KeyListener, VariationChangeListener {
 	private NamedVariation variation;
 	private JButton deleteButton;
 	private ArrayList<VariationNameChangeRequestListener> nameChangeRequestListeners;
 	private ArrayList<VariationChangeListener> variationChangeListeners;
+	private ArrayList<VariationReplacementListener> variationReplacementListeners;
 	private JTextField nameField;
+	private VariationControlPanel specialPanel;
+	private JComboBox<Object> typeComboBox;
+	
+	private static Map.Entry<String, Supplier<NamedVariation>> variationEntry(Supplier<NamedVariation> supp) {
+		return Map.entry(supp.get().getVariationTypeName(), supp);
+	}
+	
+	public static Map<String, Supplier<NamedVariation>> variationCreators = Map.ofEntries(
+			variationEntry(EyefishVariation::new),
+			variationEntry(HorseshoeVariation::new),
+			variationEntry(LinearVariation::new),
+			variationEntry(PopcornVariation::new),
+			variationEntry(SinusoidalVariation::new),
+			variationEntry(SphericalVariation::new),
+			variationEntry(SwirlVariation::new)
+	);
 	
 	public VariationDetailsPanel(NamedVariation vari) {
 		super();
@@ -44,23 +79,33 @@ public class VariationDetailsPanel extends VariationDeletingPanel implements Act
 		JLabel typeLabel = new JLabel("Type:");
 		generalLayout.setConstraints(typeLabel, labelConstraints);
 		generalPanel.add(typeLabel);
-		GridBagConstraints rightLabelConstraints = new GridBagConstraints();
-		rightLabelConstraints.weightx = 1.0;
-		rightLabelConstraints.gridwidth = GridBagConstraints.REMAINDER;
-//		rightLabelConstraints.ipadx = 10;
-		rightLabelConstraints.anchor = GridBagConstraints.WEST;
-		JLabel typeValueLabel = new JLabel(variation.getVariationTypeName());
-		generalLayout.setConstraints(typeValueLabel, rightLabelConstraints);
-		generalPanel.add(typeValueLabel);
+//		GridBagConstraints rightLabelConstraints = new GridBagConstraints();
+//		rightLabelConstraints.weightx = 1.0;
+//		rightLabelConstraints.gridwidth = GridBagConstraints.REMAINDER;
+////		rightLabelConstraints.ipadx = 10;
+//		rightLabelConstraints.anchor = GridBagConstraints.WEST;
+//		JLabel typeValueLabel = new JLabel(variation.getVariationTypeName());
+//		generalLayout.setConstraints(typeValueLabel, rightLabelConstraints);
+//		generalPanel.add(typeValueLabel);
 		
-		JLabel nameLabel = new JLabel("Name:");
-		generalLayout.setConstraints(nameLabel, labelConstraints);
-		generalPanel.add(nameLabel);
 		GridBagConstraints controlConstraints = new GridBagConstraints();
 		controlConstraints.weightx = 1.0;
 		controlConstraints.gridwidth = GridBagConstraints.REMAINDER;
 //		controlConstraints.ipadx = 10;
 		controlConstraints.fill = GridBagConstraints.HORIZONTAL;
+		
+		typeComboBox = new JComboBox<Object>();
+		for (String typeName: variationCreators.keySet()) {
+			typeComboBox.addItem(typeName);
+		}
+		typeComboBox.setSelectedItem(variation.getVariationTypeName());
+		typeComboBox.addActionListener(this);
+		generalLayout.setConstraints(typeComboBox, controlConstraints);
+		generalPanel.add(typeComboBox);
+		JLabel nameLabel = new JLabel("Name:");
+		generalLayout.setConstraints(nameLabel, labelConstraints);
+		generalPanel.add(nameLabel);
+
 		nameField = new JTextField();
 		nameField.setText(vari.getName());
 		generalLayout.setConstraints(nameField, controlConstraints);
@@ -76,16 +121,30 @@ public class VariationDetailsPanel extends VariationDeletingPanel implements Act
 		generalPanel.add(buttonsPanel);
 		generalPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("General settings"),BorderFactory.createEmptyBorder(10,10,10,10)));
 		this.add(generalPanel);
-		VariationControlPanel specialPanel = VariationControlMaker.createController(vari);
-		if (specialPanel != null) {
-			this.add(specialPanel);
-			specialPanel.addVariationChangeListener(this);
-		}
+		makeSpecialPanel();
 		deleteButton.addActionListener(this);
 		nameField.addFocusListener(this);
 		nameField.addKeyListener(this);
 		nameChangeRequestListeners = new ArrayList<VariationNameChangeRequestListener>();
 		variationChangeListeners = new ArrayList<VariationChangeListener>();
+		variationReplacementListeners = new ArrayList<VariationReplacementListener>();
+	}
+	
+	private void makeSpecialPanel() {
+		specialPanel = VariationControlMaker.createController(variation);
+		if (specialPanel != null) {
+			this.add(specialPanel);
+			specialPanel.addVariationChangeListener(this);
+			this.revalidate();
+		}
+	}
+	
+	private void deleteSpecialPanel() {
+		if (specialPanel != null) {
+			this.remove(specialPanel);
+			specialPanel = null;
+			this.revalidate();
+		}
 	}
 	
 	public void addNameChangeRequestListener(VariationNameChangeRequestListener listener) {
@@ -109,11 +168,33 @@ public class VariationDetailsPanel extends VariationDeletingPanel implements Act
 			listener.variationChanged(event);
 		}
 	}
+	
+	public void addVariationReplacementListener(VariationReplacementListener listener) {
+		variationReplacementListeners.add(listener);
+	}
+	
+	private void sendVariationReplacedEvent(EventObject parent, NamedVariation oldVariation, NamedVariation newVariation) {
+		VariationReplacedEvent event = new VariationReplacedEvent(this, parent, oldVariation, newVariation);
+		for (VariationReplacementListener listener: variationReplacementListeners) {
+			listener.variationReplaced(event);
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == deleteButton) {
 			sendDeletedEvent(e, variation);
+		}
+		else if ((e.getSource() == typeComboBox) && !typeComboBox.getSelectedItem().equals(variation.getVariationTypeName())) {
+			System.out.println("type change");
+			NamedVariation newVariation = variationCreators.get(typeComboBox.getSelectedItem()).get();
+			NamedVariation oldVariation = variation;
+			variation = newVariation;
+			deleteSpecialPanel();
+			makeSpecialPanel();
+			sendVariationReplacedEvent(e, oldVariation, newVariation);
+			
+			
 		}
 	}
 

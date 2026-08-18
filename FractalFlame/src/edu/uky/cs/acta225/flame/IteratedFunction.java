@@ -10,6 +10,7 @@ import java.util.Set;
 
 import edu.uky.cs.acta225.flame.variation.NamedVariation;
 import edu.uky.cs.acta225.imageutils.ImageUtilities;
+import edu.uky.cs.acta225.linkedlist.MyLinkedHashMap;
 
 public class IteratedFunction implements Renamable {
 //	public static final int VARIATION_LINEAR = 0;
@@ -23,7 +24,7 @@ public class IteratedFunction implements Renamable {
 //	private double a,b,c,d,e,f;
 	private double[] parameters;
 	private int color;
-	private LinkedHashMap<NamedVariation, Double> variationWeights;
+	private MyLinkedHashMap<NamedVariation, Double> variationWeights;
 	private String name;
 
 	
@@ -35,7 +36,7 @@ public class IteratedFunction implements Renamable {
 	public IteratedFunction(double[] params, int col, Map<NamedVariation, Double> varWeights, String nm) {
 		parameters = params;
 		color = col;
-		variationWeights = new LinkedHashMap<NamedVariation, Double>();
+		variationWeights = new MyLinkedHashMap<NamedVariation, Double>();
 		for (var entry: varWeights.entrySet()) {
 			variationWeights.put(entry.getKey(), entry.getValue());
 		}
@@ -65,7 +66,7 @@ public class IteratedFunction implements Renamable {
 	}
 	
 	public IteratedFunction deepClone() {
-		LinkedHashMap<NamedVariation, Double> weights = new LinkedHashMap<NamedVariation, Double>();
+		MyLinkedHashMap<NamedVariation, Double> weights = new MyLinkedHashMap<NamedVariation, Double>();
 		for (var entry: variationWeights.entrySet()) {
 			weights.put(entry.getKey().cloneVariation(), entry.getValue());
 		}
@@ -98,6 +99,14 @@ public class IteratedFunction implements Renamable {
 	
 	public Map<NamedVariation, Double> getVariationWeights() {
 		return Collections.unmodifiableMap(variationWeights);
+	}
+	
+	public void replaceVariation(NamedVariation oldVariation, NamedVariation newVariation) {
+		variationWeights.replaceKey(oldVariation, newVariation);
+	}
+	
+	public void addVariation(NamedVariation variation, Double weight) {
+		variationWeights.put(variation, weight);
 	}
 	
 	public void setVariationWeight(NamedVariation variation, Double weight) {

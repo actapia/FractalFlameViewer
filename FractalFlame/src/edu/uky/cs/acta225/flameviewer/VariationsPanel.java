@@ -22,11 +22,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import edu.uky.cs.acta225.flame.variation.NamedVariation;
+import edu.uky.cs.acta225.linkedlist.MyLinkedHashMap;
 
 public class VariationsPanel extends VariationDeletingPanel {
-	private LinkedHashMap<NamedVariation, Double> variationWeights;
+	private MyLinkedHashMap<NamedVariation, Double> variationWeights;
 	private HashMap<NamedVariation, VariationComponents> variationComponents;
 	private JPanel weightsPanel;
+	GridBagLayout gbl;
+	private GridBagConstraints labelConstraints, middleConstraints, endConstraints, buttonConstraints;
 
 	private class WeightChanger implements ChangeListener {
 		private NamedVariation variation;
@@ -69,57 +72,63 @@ public class VariationsPanel extends VariationDeletingPanel {
 		variationComponents.get(vari).getDetailsButton().addActionListener(listener);
 	}
 	
-	public VariationsPanel(LinkedHashMap<NamedVariation, Double> varWeights) {
-		super();
+	public void addVariation(NamedVariation vari, Double weight) {
 		final double WEIGHT_STEP = 0.1;
 		final int SPINNER_HEIGHT = 20;
 		final int SPINNER_WIDTH = 150;
+		JLabel variationLabel =  new JLabel(vari.getName() + ":");
+		gbl.setConstraints(variationLabel, labelConstraints);
+		weightsPanel.add(variationLabel);
+		SpinnerNumberModel model = new SpinnerNumberModel(weight.doubleValue(), 0, Double.MAX_VALUE, WEIGHT_STEP);
+		JSpinner spinner = new JSpinner(model);
+		spinner.setPreferredSize(new Dimension(SPINNER_WIDTH, SPINNER_HEIGHT));
+		gbl.setConstraints(spinner, middleConstraints);
+		weightsPanel.add(spinner);
+		JButton detailsButton = new JButton("Details");
+		gbl.setConstraints(detailsButton, buttonConstraints);
+		weightsPanel.add(detailsButton);
+		JButton deleteButton = new JButton("Delete");
+		gbl.setConstraints(deleteButton, endConstraints);
+		weightsPanel.add(deleteButton);
+		variationComponents.put(vari, new VariationComponents(variationLabel, spinner, detailsButton, deleteButton));
+		spinner.addChangeListener(new WeightChanger(vari));
+		deleteButton.addActionListener(new FunctionDeleter(vari));
+	}
+	
+	public VariationsPanel(MyLinkedHashMap<NamedVariation, Double> varWeights) {
+		super();
+
+
 		variationWeights = varWeights;
 		weightsPanel = new JPanel();
 		JScrollPane weightsScrollPane = new JScrollPane(weightsPanel);
 		weightsScrollPane.setPreferredSize(new Dimension(400, 170));
 //		weightsScrollPane.setBorder();
-		GridBagLayout gbl = new GridBagLayout();
+		gbl = new GridBagLayout();
 		weightsPanel.setLayout(gbl);
-		GridBagConstraints labelConstraints = new GridBagConstraints();
+		labelConstraints = new GridBagConstraints();
 		labelConstraints.weightx = 1.0;
 		labelConstraints.gridwidth = 1;
 		labelConstraints.ipadx = 10;
 		labelConstraints.anchor = GridBagConstraints.WEST;
-		GridBagConstraints middleConstraints = new GridBagConstraints();
+		middleConstraints = new GridBagConstraints();
 		middleConstraints.weightx = 1.0;
 		middleConstraints.gridwidth = 1;
-		GridBagConstraints buttonConstraints = new GridBagConstraints();
+		buttonConstraints = new GridBagConstraints();
 		buttonConstraints.weightx = 1.0;
 		buttonConstraints.gridwidth = 1;
 		buttonConstraints.fill = GridBagConstraints.HORIZONTAL;
 		buttonConstraints.insets = new Insets(0, 0, 0, 5);
-		GridBagConstraints endConstraints = new GridBagConstraints();
+		endConstraints = new GridBagConstraints();
 		endConstraints.weightx = 1.0;
 		endConstraints.fill = GridBagConstraints.HORIZONTAL;
 		endConstraints.gridwidth = GridBagConstraints.REMAINDER;
 		endConstraints.insets = new Insets(0, 0, 0, 5);
 		variationComponents = new HashMap<NamedVariation, VariationComponents>();
-		for (var entry: variationWeights.entrySet()) {
-//			ArrayList<JComponent> components = new ArrayList<JComponent>();
-			JLabel variationLabel =  new JLabel(entry.getKey().getName() + ":");
-			gbl.setConstraints(variationLabel, labelConstraints);
-			weightsPanel.add(variationLabel);
-			SpinnerNumberModel model = new SpinnerNumberModel(entry.getValue().doubleValue(), 0, Double.MAX_VALUE, WEIGHT_STEP);
-			JSpinner spinner = new JSpinner(model);
-			spinner.setPreferredSize(new Dimension(SPINNER_WIDTH, SPINNER_HEIGHT));
-			gbl.setConstraints(spinner, middleConstraints);
-			weightsPanel.add(spinner);
-			JButton detailsButton = new JButton("Details");
-			gbl.setConstraints(detailsButton, buttonConstraints);
-			weightsPanel.add(detailsButton);
-			JButton deleteButton = new JButton("Delete");
-			gbl.setConstraints(deleteButton, endConstraints);
-			weightsPanel.add(deleteButton);
-			variationComponents.put(entry.getKey(), new VariationComponents(variationLabel, spinner, detailsButton, deleteButton));
-			spinner.addChangeListener(new WeightChanger(entry.getKey()));
-			deleteButton.addActionListener(new FunctionDeleter(entry.getKey()));
-		}
+//		for (var entry: variationWeights.entrySet()) {
+////			ArrayList<JComponent> components = new ArrayList<JComponent>();
+//			addVariation(entry.getKey(), entry.getValue());
+//		}
 		this.add(weightsScrollPane);
 		
 	}

@@ -25,6 +25,8 @@ import javax.swing.event.ChangeListener;
 
 import edu.uky.cs.acta225.flame.IteratedFunction;
 import edu.uky.cs.acta225.flame.variation.NamedVariation;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateEvent;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateListener;
 
 public class FunctionDetailsPanel extends JPanel implements ChangeListener, FunctionUpdateListener {
 	private IteratedFunction function;
@@ -33,6 +35,7 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 	private ArrayList<FunctionUpdateListener> functionUpdateListeners;
 	private FunctionPanel functionPanel;
 	private JPanel variationWeightsPanel;
+	private GridBagLayout variatonWeightGridBagLayout;
 	
 	public void deleteVariation(NamedVariation variation) {
 		function.removeVariation(variation);
@@ -48,6 +51,17 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 		labeledSpinner.getLabel().setText(variation.getName() + ":");
 		labeledSpinner.getLabel().repaint();
 		labeledSpinner.getLabel().getParent().revalidate();
+	}
+	
+	public void addVariation(NamedVariation variation, Double weight) {
+		function.addVariation(variation, weight);
+		ArrayList<String> labels = new ArrayList<String>();
+		labels.add(variation.getName() + ":");
+		LabeledSpinner newSpinner = VariationFunctionControls.addGridBagSpinners(variationWeightsPanel, variatonWeightGridBagLayout, labels, VARIATION_MODEL).get(0);
+		var spinner = newSpinner.getSpinner();
+		spinner.setValue(weight);
+		spinner.addChangeListener(new VariationWeightChanger(variation));
+		this.revalidate();
 	}
 
 	
@@ -81,9 +95,12 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 		
 	}
 	
+	final static double CONSTANT_STEP = 0.1;
+	final static SpinnerNumberModel VARIATION_MODEL = new SpinnerNumberModel(0, 0, Double.MAX_VALUE, CONSTANT_STEP);
+	
 	public FunctionDetailsPanel(JFrame parent, IteratedFunction fun, double weight, FunctionPanel fp) {
 		super();
-		final double CONSTANT_STEP = 0.1;
+		
 		function = fun;
 		JPanel constantsPanel = new JPanel();
 		ArrayList<String> constantLabels = new ArrayList<String>();
@@ -101,7 +118,9 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 		for (NamedVariation variation: function.getVariations()) {
 			variationLabels.add(variation.getName() + ":");
 		}
-		ArrayList<LabeledSpinner> variationWeightSpinners = VariationFunctionControls.addGridBagSpinners(variationWeightsPanel, variationLabels, new SpinnerNumberModel(0, 0, Double.MAX_VALUE, CONSTANT_STEP));
+		variatonWeightGridBagLayout = new GridBagLayout();
+		variationWeightsPanel.setLayout(variatonWeightGridBagLayout);
+		ArrayList<LabeledSpinner> variationWeightSpinners = VariationFunctionControls.addGridBagSpinners(variationWeightsPanel, variatonWeightGridBagLayout, variationLabels, VARIATION_MODEL);
 		var entryIterator = function.getVariationWeights().entrySet().iterator();
 		var spinnerIterator = variationWeightSpinners.iterator();
 		variationWeightControls = new HashMap<NamedVariation, LabeledSpinner>();

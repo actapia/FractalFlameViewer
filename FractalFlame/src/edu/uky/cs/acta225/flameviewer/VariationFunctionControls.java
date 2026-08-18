@@ -15,11 +15,15 @@ import javax.swing.SpinnerNumberModel;
 
 public class VariationFunctionControls {
 	public static ArrayList<LabeledSpinner> addGridBagSpinners(JPanel panel, List<String> labels, List<SpinnerNumberModel> models) {
+		GridBagLayout gbl = new GridBagLayout();
+		panel.setLayout(gbl);
+		return addGridBagSpinners(panel, gbl, labels, models);
+	}
+	
+	public static ArrayList<LabeledSpinner> addGridBagSpinners(JPanel panel, GridBagLayout gbl, List<String> labels, List<SpinnerNumberModel> models) {
 		final int SPINNER_HEIGHT = 20;
 		final int SPINNER_WIDTH = 75;
 		Dimension spinnerDimensions = new Dimension(SPINNER_WIDTH, SPINNER_HEIGHT);
-		GridBagLayout gbl = new GridBagLayout();
-		panel.setLayout(gbl);
 		GridBagConstraints con = new GridBagConstraints();
 		ArrayList<LabeledSpinner> controls = new ArrayList<LabeledSpinner>();
 		Iterator<String> labelIter = labels.iterator();
@@ -51,11 +55,21 @@ public class VariationFunctionControls {
 		return controls;
 	}
 	
-	public static ArrayList<LabeledSpinner> addGridBagSpinners(JPanel panel, List<String> labels, SpinnerNumberModel model) {
+	public static ArrayList<LabeledSpinner> addGridBagSpinners(JPanel panel, GridBagLayout gbl, List<String> labels, SpinnerNumberModel model) {
 		ArrayList<SpinnerNumberModel> models = new ArrayList<SpinnerNumberModel>();
 		for (String label: labels) {
 			models.add(new SpinnerNumberModel(model.getNumber(), model.getMinimum(), model.getMaximum(), model.getStepSize()));
 		}
-		return addGridBagSpinners(panel, labels, models);
+		return addGridBagSpinners(panel, gbl, labels, models);
+	}
+	
+	public static ArrayList<LabeledSpinner> addGridBagSpinners(JPanel panel, List<String> labels, SpinnerNumberModel model) {
+		GridBagLayout gbl = new GridBagLayout();
+		panel.setLayout(gbl);
+		ArrayList<SpinnerNumberModel> models = new ArrayList<SpinnerNumberModel>();
+		for (String label: labels) {
+			models.add(new SpinnerNumberModel(model.getNumber(), model.getMinimum(), model.getMaximum(), model.getStepSize()));
+		}
+		return addGridBagSpinners(panel, gbl, labels, models);
 	}
 }

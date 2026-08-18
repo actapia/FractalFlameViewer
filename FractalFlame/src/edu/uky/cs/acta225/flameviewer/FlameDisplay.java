@@ -77,9 +77,20 @@ import edu.uky.cs.acta225.flame.variation.PopcornVariation;
 import edu.uky.cs.acta225.flame.variation.SinusoidalVariation;
 import edu.uky.cs.acta225.flame.variation.SphericalVariation;
 import edu.uky.cs.acta225.flame.variation.SwirlVariation;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateEvent;
+import edu.uky.cs.acta225.flameviewer.events.FunctionUpdateListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationChangeListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationDeletedEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationDeletionListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationNameChangeRequestListener;
+import edu.uky.cs.acta225.flameviewer.events.VariationNameChangeRequestedEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationReplacedEvent;
+import edu.uky.cs.acta225.flameviewer.events.VariationReplacementListener;
 import edu.uky.cs.acta225.imageutils.ImageUtilities;
+import edu.uky.cs.acta225.linkedlist.MyLinkedHashMap;
 
-public class FlameDisplay extends JFrame implements ActionListener,MouseWheelListener,ChangeListener,MouseMotionListener,MouseListener, ProgressListener, RenderListener, FunctionUpdateListener, VariationDeletionListener, VariationNameChangeRequestListener, VariationChangeListener {
+public class FlameDisplay extends JFrame implements ActionListener,MouseWheelListener,ChangeListener,MouseMotionListener,MouseListener, ProgressListener, RenderListener, FunctionUpdateListener, VariationDeletionListener, VariationNameChangeRequestListener, VariationChangeListener, VariationReplacementListener {
 	private ImagePanel fractalImagePanel;
 	private JSpinner xSpinner,ySpinner,zoomSpinner; //These are the position spinners.
 	private JSpinner heightSpinner, widthSpinner; //These are the size spinners;
@@ -108,7 +119,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 //	private double[] functionProbabilities;
 //	private static double[] initialVariationWeightLimits = new double[IteratedFunction.NUMBER_OF_VARIATIONS];
 	private Distribution<IteratedFunction> currentFunctionProbabilities;
-	private LinkedHashMap<NamedVariation, Double> currentVariationDefaultWeights;
+	private MyLinkedHashMap<NamedVariation, Double> currentVariationDefaultWeights;
 	
 	private int frames,fractalNumber;
 	private boolean cancelled;
@@ -145,6 +156,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	private HashMap<String, IDPool> variationIDPools;
 	
 	private ComboBoxItem newFunctionItem;
+	private ComboBoxItem newVariationItem;
 	
 	
 	protected int mod(int n,int d) { //This is my "improved" modulus function. It always returns the congruence class of n mod d between 0 and (d-1), inclusive.
@@ -410,13 +422,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		final int INITIAL_SUPERSAMPLE_LEVELS = 1;
 		final int INITIAL_FUNCTIONS = 5;
 		//Setup the variation weights.
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_HORSESHOE] = 0;
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_LINEAR] = 1; //1
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_POPCORN] = 1; 
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_SINUSOIDAL] = 1; //1
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_SPHERICAL] = 1; //1
-//		initialVariationWeightLimits[IteratedFunction.VARIATION_SWIRL] = 1; //1
-		currentVariationDefaultWeights = new LinkedHashMap<NamedVariation, Double>();
+		currentVariationDefaultWeights = new MyLinkedHashMap<NamedVariation, Double>();
 		currentVariationDefaultWeights.put(new HorseshoeVariation(), Double.valueOf(0));
 		currentVariationDefaultWeights.put(new LinearVariation(), Double.valueOf(1));
 		currentVariationDefaultWeights.put(new PopcornVariation(), Double.valueOf(1));
@@ -725,6 +731,8 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		functionsComboBox.addItem(newFunctionItem);
 		functionDetailsComboBox.addItem(newFunctionItem);
 		
+		newVariationItem = new ComboBoxItem("New variation");
+		
 		//Add the listeners.
 		fractalImagePanel.addMouseWheelListener(this);
 		fractalImagePanel.addMouseMotionListener(this);
@@ -767,19 +775,24 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 //			functionColor.addChangeListener(this);
 		}
 		variationIDPools = new HashMap<String, IDPool>();
-		for (NamedVariation variation: this.currentVariationDefaultWeights.keySet()) {
-			VariationDetailsPanel vp = new VariationDetailsPanel(variation);
-			this.variationDetailCards.add(vp, variation.getName());
-			this.variationDetailCardPanels.put(variation.getName(), vp);
-			this.variationDetailsComboBox.addItem(variation.getName());
-			vp.addDeletionListener(this);
-			variationsPanel.addDetailsListener(variation, new DetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
-			vp.addNameChangeRequestListener(this);
-			vp.addVariationChangelistener(this);
+		variationDetailsComboBox.addItem(newVariationItem);
+		for (var entry: this.currentVariationDefaultWeights.entrySet()) {
+//			VariationDetailsPanel vp = new VariationDetailsPanel(variation);
+//			this.variationDetailCards.add(vp, variation.getName());
+//			this.variationDetailCardPanels.put(variation.getName(), vp);
+//			this.variationDetailsComboBox.addItem(variation.getName());
+//			vp.addDeletionListener(this);
+//			variationsPanel.addDetailsListener(variation, new DetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
+//			vp.addNameChangeRequestListener(this);
+//			vp.addVariationChangelistener(this);
+//			vp.addVariationReplacementListener(this);
+			newVariation(entry.getKey(), entry.getValue());
 		}
+		variationDetailsComboBox.setSelectedIndex(0);
 		variationDetailsComboBox.addActionListener(this);
 		functionsComboBox.setSelectedIndex(0);
 		functionDetailsComboBox.setSelectedIndex(0);
+		
 		//Normalize the probability distribution.
 //		for (int i=0;i<currentFunctions.length;i++) {
 //			functionProbabilities[i] = functionProbabilities[i]/totalFunctionProbabilities;
@@ -923,16 +936,36 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		variationIDPools.putIfAbsent(variationType, new IDPool());
 		return variationIDPools.get(variationType);
 	}
+
+	public NamedVariation newVariation(NamedVariation variation, Double weight) {
+		VariationDetailsPanel vp = new VariationDetailsPanel(variation);
+		this.variationDetailCards.add(vp, variation.getName());
+		this.variationDetailCardPanels.put(variation.getName(), vp);
+		this.variationDetailsComboBox.insertItemAt(variation.getName(), variationDetailsComboBox.getItemCount() - 1);
+		vp.addDeletionListener(this);
+		variationsPanel.addVariation(variation, weight);
+		variationsPanel.addDetailsListener(variation, new DetailsDisplayer(variation, variationDetailsComboBox, variationDetailFrame));
+		variationsPanel.repaint();
+		variationsPanel.getParent().revalidate();
+		vp.addNameChangeRequestListener(this);
+		vp.addVariationChangelistener(this);
+		vp.addVariationReplacementListener(this);
+		return variation;
+	}
 	
-//	private static Pattern getVariationPattern(String variationType) {
-//		Pattern res = variationPatterns.get(variationType);
-//		if (res == null) {
-//			res = Pattern.compile(variationType + " ([0-9]*)");
-//			variationPatterns.put(variationType, res);
-//		}
-//		return res;
-//	}
-//	
+	public NamedVariation newVariation() {
+		NamedVariation variation = VariationDetailsPanel.variationCreators.values().iterator().next().get();
+		variation.setName(String.format("%s %d", variation.getVariationTypeName(), this.getVariationIDPool(variation.getVariationTypeName()).getNextID()));
+		return newVariation(variation, 1.0);
+	}
+	
+	public void addVariationToFunctions(NamedVariation variation, Double defaultWeight) {
+		for (var panel: this.functionDetailCardPanels.values()) {
+			panel.addVariation(variation, defaultWeight * Math.random());
+		}
+	}
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if ((arg0.getSource() == centerButton || arg0.getSource() == zeroButton)) {
@@ -967,6 +1000,13 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 			((CardLayout)functionDetailCards.getLayout()).show(functionDetailCards, (String)functionDetailsComboBox.getSelectedItem());
 		}
 		else if (arg0.getSource() == variationDetailsComboBox) {
+			if (variationDetailsComboBox.getSelectedItem() == newVariationItem) {
+				NamedVariation vari = newVariation();
+				this.addVariationToFunctions(vari, 1.0);
+				this.currentVariationDefaultWeights.put(vari, 1.0);
+				variationDetailsComboBox.setSelectedItem(vari.getName());
+				updateImage();
+			}
 			((CardLayout)variationDetailCards.getLayout()).show(variationDetailCards, (String)variationDetailsComboBox.getSelectedItem());
 		}
 //		else if (arg0.getSource()==randomizeProbabilitiesButton) {
@@ -1276,6 +1316,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		}
 		variationsPanel.repaint();
 		variationsPanel.getParent().revalidate();
+		this.currentVariationDefaultWeights.remove(variation);
 		updateImage();
 //		this.repaint();
 //		this.revalidate();
@@ -1315,6 +1356,20 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 
 	@Override
 	public void variationChanged(VariationChangeEvent event) {
+		updateImage();
+	}
+
+	@Override
+	public void variationReplaced(VariationReplacedEvent event) {
+		System.out.println("Received variation change.");
+		NamedVariation oldVariation = event.getVariation();
+		NamedVariation newVariation = event.getNewVariation();
+//		Double weight = this.currentVariationDefaultWeights.get(oldVariation);
+		this.currentVariationDefaultWeights.replaceKey(oldVariation, newVariation);
+		for (IteratedFunction function: this.currentFunctionProbabilities.keySet()) {
+//			function.getVariationWeights()
+			function.replaceVariation(oldVariation, newVariation);
+		}
 		updateImage();
 	}
 
