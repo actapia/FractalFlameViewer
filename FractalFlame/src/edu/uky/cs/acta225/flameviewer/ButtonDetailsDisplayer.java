@@ -8,21 +8,19 @@ import javax.swing.JFrame;
 
 import edu.uky.cs.acta225.flame.Named;
 
-public class ButtonDetailsDisplayer implements ActionListener {
+public class ButtonDetailsDisplayer extends DetailsDisplayer {
 	private Named object;
 	private JComboBox<Object> detailsComboBox;
-	private JFrame detailsFrame;
 	
 	public ButtonDetailsDisplayer(Named o, JComboBox<Object> box, JFrame frame) {
+		super(frame);
 		object = o;
 		detailsComboBox = box;
-		detailsFrame = frame;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		detailsComboBox.setSelectedItem(object.getName());
-		detailsFrame.setVisible(true);
-		detailsFrame.requestFocus();
+		super.actionPerformed(e);
 	}
 }

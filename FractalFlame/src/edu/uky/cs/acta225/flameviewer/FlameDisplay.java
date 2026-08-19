@@ -90,7 +90,7 @@ import edu.uky.cs.acta225.flameviewer.events.VariationReplacementListener;
 import edu.uky.cs.acta225.imageutils.ImageUtilities;
 import edu.uky.cs.acta225.linkedlist.MyLinkedHashMap;
 
-public class FlameDisplay extends JFrame implements ActionListener,MouseWheelListener,ChangeListener,MouseMotionListener,MouseListener, ProgressListener, RenderListener, FunctionUpdateListener, VariationDeletionListener, VariationNameChangeRequestListener, VariationChangeListener, VariationReplacementListener {
+public class FlameDisplay extends JFrame implements MouseWheelListener,ChangeListener,MouseMotionListener,MouseListener, ProgressListener, RenderListener, FunctionUpdateListener, VariationDeletionListener, VariationNameChangeRequestListener, VariationChangeListener, VariationReplacementListener {
 	private ImagePanel fractalImagePanel;
 	private JSpinner xSpinner,ySpinner,zoomSpinner; //These are the position spinners.
 	private JSpinner heightSpinner, widthSpinner; //These are the size spinners;
@@ -181,9 +181,9 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 		
 		@Override
 		protected Object newObject() {
-			var res = newFunction();
+			IteratedFunction res = newFunction();
 			updateImage();
-			return res;
+			return res.getName();
 		}
 	}
 
@@ -481,7 +481,7 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 				return Integer.valueOf(0);
 			}
 		});
-		newFractalButton.addActionListener(this);
+//		newFractalButton.addActionListener(this);
 		functionsComboBox.addActionListener(new NewFunctionComboBoxCardSelector(functionsComboBox, functionCards, newFunctionItem));
 		functionDetailsComboBox.addActionListener(new NewFunctionComboBoxCardSelector(functionDetailsComboBox, functionDetailCards, newFunctionItem));
 		saveImageItem.addActionListener(new ActionListener() {
@@ -545,8 +545,8 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 			}
 			
 		});
-		functionDetailsMenuItem.addActionListener(this);
-		variationDetailsMenuItem.addActionListener(this);
+		functionDetailsMenuItem.addActionListener(new DetailsDisplayer(functionDetailFrame));
+		variationDetailsMenuItem.addActionListener(new DetailsDisplayer(variationDetailFrame));
 		variationsPanel.addDeletionListener(this);
 		setSize(INITIAL_FRAME_WIDTH,INITIAL_FRAME_HEIGHT);
 		currentFunctionProbabilities = new Distribution<IteratedFunction>();
@@ -561,7 +561,18 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 			newVariation(entry.getKey(), entry.getValue());
 		}
 		variationDetailsComboBox.setSelectedIndex(0);
-		variationDetailsComboBox.addActionListener(this);
+		variationDetailsComboBox.addActionListener(new NewObjectComboBoxCardSelector(variationDetailsComboBox, variationDetailCards, newVariationItem) {
+
+			@Override
+			protected Object newObject() {
+				NamedVariation vari = newVariation();
+				addVariationToFunctions(vari, 1.0);
+				currentVariationDefaultWeights.put(vari, 1.0);
+				updateImage();
+				return vari.getName();
+			}
+			
+		});
 		functionsComboBox.setSelectedIndex(0);
 		functionDetailsComboBox.setSelectedIndex(0);
 	
@@ -694,27 +705,6 @@ public class FlameDisplay extends JFrame implements ActionListener,MouseWheelLis
 	public void addVariationToFunctions(NamedVariation variation, Double defaultWeight) {
 		for (var panel: this.functionDetailCardPanels.values()) {
 			panel.addVariation(variation, defaultWeight * Math.random());
-		}
-	}
-	
-	
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		if (arg0.getSource() == variationDetailsComboBox) {
-			if (variationDetailsComboBox.getSelectedItem() == newVariationItem) {
-				NamedVariation vari = newVariation();
-				this.addVariationToFunctions(vari, 1.0);
-				this.currentVariationDefaultWeights.put(vari, 1.0);
-				variationDetailsComboBox.setSelectedItem(vari.getName());
-				updateImage();
-			}
-			((CardLayout)variationDetailCards.getLayout()).show(variationDetailCards, (String)variationDetailsComboBox.getSelectedItem());
-		}
-		else if (arg0.getSource() == functionDetailsMenuItem) {
-			functionDetailFrame.setVisible(true);
-		}
-		else if (arg0.getSource() == variationDetailsMenuItem) {
-			variationDetailFrame.setVisible(true);
 		}
 	}
 	

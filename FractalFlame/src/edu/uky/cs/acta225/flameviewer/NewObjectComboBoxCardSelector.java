@@ -17,7 +17,9 @@ public abstract class NewObjectComboBoxCardSelector extends ComboBoxCardSelector
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == newItem) {
+		System.out.println(newItem);
+		if (comboBox.getSelectedItem() == newItem) {
+			System.out.println("newitem");
 			comboBox.setSelectedItem(newObject());
 		}
 		System.out.println("NOCBCS");

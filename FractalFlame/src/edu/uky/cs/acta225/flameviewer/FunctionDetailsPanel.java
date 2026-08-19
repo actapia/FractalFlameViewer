@@ -61,6 +61,7 @@ public class FunctionDetailsPanel extends JPanel implements ChangeListener, Func
 		var spinner = newSpinner.getSpinner();
 		spinner.setValue(weight);
 		spinner.addChangeListener(new VariationWeightChanger(variation));
+		variationWeightControls.put(variation, newSpinner);
 		this.revalidate();
 	}
 
